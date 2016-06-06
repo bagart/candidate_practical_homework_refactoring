@@ -2,8 +2,10 @@
 namespace Language\Module\ApiCall;
 use Language\Exception as E;
 use Language\ApiCall;
+use Language\Iface;
 
-abstract class AbsApiCall
+
+abstract class AbsApiCall implements Iface\ApiCall
 {
     protected $target = 'system_api';
     protected $mode = 'language_api';

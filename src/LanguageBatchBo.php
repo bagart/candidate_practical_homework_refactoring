@@ -2,6 +2,10 @@
 namespace Language;
 
 use Language\Exception as E;
+use Language\Iface;
+
+use Language\Module\ApiCall;
+use Language\Module\Cache;
 use Language\Module\Traits;
 
 /**
@@ -12,12 +16,15 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 	use Traits\Logger;
 	
 	private $applications = null;
-	private $path_root = null;
 	
 	private $applets = [
 		'memberapplet' => 'JSM2_MemberApplet',
 	];
 
+	/**
+	 * @var Iface\LanguageApiCall|null
+	 */
+	private $language_api_call = null;
 	/**
 	 * Starts the language file generation.
 	 *
@@ -28,21 +35,21 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 	public function generateLanguageFiles()
 	{
 		// The applications where we need to translate.
-	
-		$this->getLogger()->info("\nGenerating language files\n");
+		$this->getLogger()->info("Generating language php files: START");
 
 		foreach ($this->getApplications() as $application => $languages) {
-			$this->getLogger()->info("[APPLICATION: $application]}\n");
+			$this->getLogger()->info("generate: $application with languages: " . implode(', ', $languages));
 			foreach ($languages as $language) {
-				$this->getLogger()->debug("\t[LANGUAGE: $language] try\n");
-				$this->getLanguageFile($application, $language);
-				$this->getLogger()->info("\t[LANGUAGE: $language] OK\n");
+				$this->getLogger()->debug("\tLANGUAGE $language: try");
+				$this->generateLanguagePhpFile($language, $application);
+				$this->getLogger()->info("\tLANGUAGE $language: OK");
 			}
 		}
+		$this->getLogger()->info("Generating language php files: END");
 		
 		return $this;
 	}
-	
+
 	/**
 	 * Gets the language file for the given language and stores it.
 	 *
@@ -53,48 +60,38 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 	 *
 	 * @return bool   The success of the operation.
 	 */
-	public function getLanguageFile($application, $language)
+	protected function generateLanguagePhpFile($language, $application)
 	{
-		$language_data = (new Module\ApiCall\Language)->getLanguageFile($language);
+		(new Cache\Php($language, $application))
+			->store(
+				$this->getLanguageApiCall()
+					->getLanguageFile($language)
+			);
 
-		// If we got correct data we store it.
-		$destination = $this->getLanguageCacheAppFileName($application, $language);
-
-		if (!is_dir(dirname($destination))) {
-			if (!mkdir(dirname($destination), 0755, true)) {
-				throw new E\ErrorResult("error on mkdir {$destination} for LanguageFile");
-			}
-		}
-
-		if (!file_put_contents($destination, $language_data)) {
-			throw new E\ErrorResult("error on write LanguageFile: $destination");
-		}
-
-		return true;
+		return $this;
 	}
 
 	/**
-	 * Gets the file name of the cached application language php.
-	 *
-	 * @param string $language
-	 *
-	 * @return string
+	 * @return Iface\LanguageApiCall
 	 */
-	public function getLanguageCacheAppFileName($application, $language)
+	protected function getLanguageApiCall()
 	{
-		return  "{$this->getPathRoot()}/cache/$application/{$language}.php";
+		if (!$this->language_api_call) {
+			$this->language_api_call = new ApiCall\Language();
+		}
+		return $this->language_api_call;
 	}
 
-	/**
-	 * Gets the file name of the cached flash language xml.
-	 * 
-	 * @param string $language
-	 * 
-	 * @return string
-	 */
-	public function getLanguageCacheXmlFileName($language)
+
+	protected function generateLanguageXMLFile($language, $appletLanguageId)
 	{
-		return  "{$this->getPathRoot()}/cache/flash/lang_{$language}.xml";
+		(new Cache\Xml($language))
+			->store(
+				$this->getLanguageApiCall()
+					->getAppletLanguageFile($language, $appletLanguageId)
+			);
+
+		return $this;
 	}
 
 	/**
@@ -106,39 +103,38 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 	 */
 	public function generateAppletLanguageXmlFiles()
 	{
-		$this->getLogger()->info("\nGetting applet language XMLs..\n");
+		$this->getLogger()->info("Generate applet language XMLs: START");
 
-		foreach ($this->applets as $appletDirectory => $appletLanguageId) {
-			$this->getLogger()->info(" Getting > $appletLanguageId ($appletDirectory) language xmls..\n");
+		foreach ($this->getApplets() as $appletDirectory => $appletLanguageId) {
 
-			$languages = (new Module\ApiCall\Language)
+			$this->getLogger()
+				->info("\tgenerate: $appletLanguageId ($appletDirectory) language xmls: START");
+
+			$languages = $this->getLanguageApiCall()
 				->setAllowEmptyData(false)
 				->getAppletLanguages($appletLanguageId);
 
-			$this->getLogger()->info(' - Available languages: ' . implode(', ', $languages) . "\n");
+			$this->getLogger()
+				->info("\tAvailable languages: " . implode(', ', $languages));
 
 			foreach ($languages as $language) {
-				$xmlContent = (new Module\ApiCall\Language)
-					->getAppletLanguageFile($appletLanguageId, $language);
-
-				$xmlFile = $this->getLanguageCacheXmlFileName($language);
-				if (!file_put_contents($xmlFile,$xmlContent)) {
-					throw new E\ErrorResult(
-						"Unable to save applet: ($appletLanguageId) "
-						. "language: ($language) xml ($xmlFile)!"
-					);
-				}
-
-				$this->getLogger()->info(" OK saving $xmlFile was successful.\n");
+				$this->getLogger()->debug("\t\tsave XML $language: try\n");
+				$this->generateLanguageXMLFile($language, $appletLanguageId);
+				$this->getLogger()->info("\t\tsave XML $language: OK\n");
 			}
-			$this->getLogger()->info(" < $appletLanguageId ($appletDirectory) language xml cached.\n");
+			$this->getLogger()
+				->info("\tgenerate: $appletLanguageId ($appletDirectory) language xmls: END");
 		}
-
-		$this->getLogger()->info("\nApplet language XMLs generated.\n");
+		$this->getLogger()->info("Generate applet language XMLs: END");
 
 		return $this;
 	}
-		
+
+	protected function getApplets()
+	{
+		return (array) $this->applets;
+	}
+
 	public function setApplications($applications)
 	{
 		$this->applications = $applications;
@@ -153,21 +149,5 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 		}
 
 		return $this->applications;
-	}
-
-	public function setPathRoot($path_root)
-	{
-		$this->path_root = $path_root;
-
-		return $this;
-	}
-
-	protected function getPathRoot()
-	{
-		if ($this->path_root === null) {
-			$this->setPathRoot(Config::get('system.paths.root'));
-		}
-
-		return $this->path_root;
 	}
 }

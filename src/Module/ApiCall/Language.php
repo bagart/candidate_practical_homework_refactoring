@@ -1,7 +1,9 @@
 <?php
 namespace Language\Module\ApiCall;
 
-final class Language extends AbsApiCall
+use Language\Iface;
+
+final class Language extends AbsApiCall implements Iface\LanguageApiCall
 {
     protected $get = [
         'system' => 'LanguageFiles',
@@ -31,7 +33,7 @@ final class Language extends AbsApiCall
         );
     }
 
-    public function getAppletLanguageFile($applet, $language)
+    public function getAppletLanguageFile($language, $applet)
     {
         return $this->call(
             [
