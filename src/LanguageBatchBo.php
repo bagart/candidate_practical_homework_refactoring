@@ -3,8 +3,7 @@ namespace Language;
 
 use Language\Exception as E;
 use Language\Iface;
-
-use Language\Module\ApiCall;
+use Language\Module;
 use Language\Module\Cache;
 use Language\Module\Traits;
 
@@ -77,7 +76,7 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 	protected function getLanguageApiCall()
 	{
 		if (!$this->language_api_call) {
-			$this->language_api_call = new ApiCall\Language();
+			$this->language_api_call = new Module\ApiCall\Language();
 		}
 		return $this->language_api_call;
 	}
