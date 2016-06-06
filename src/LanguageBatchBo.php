@@ -1,7 +1,5 @@
 <?php
 namespace Language;
-
-use Language\Exception as E;
 use Language\Iface;
 use Language\Module;
 use Language\Module\Cache;
@@ -40,8 +38,12 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 			$this->getLogger()->info("generate: $application with languages: " . implode(', ', $languages));
 			foreach ($languages as $language) {
 				$this->getLogger()->debug("\tLANGUAGE $language: try");
-				$this->generateLanguagePhpFile($language, $application);
-				$this->getLogger()->info("\tLANGUAGE $language: OK");
+				try {
+					$this->generateLanguagePhpFile($language, $application);
+					$this->getLogger()->info("\tLANGUAGE $language: OK");
+				} catch (Iface\LanguageException $e) {
+					$this->getLogger()->error("\tLANGUAGE $language: ERROR");
+				}
 			}
 		}
 		$this->getLogger()->info("Generating language php files: END");
@@ -57,17 +59,16 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 	 *
 	 * @throws Iface\LanguageException   If there was an error during the download of the language file.
 	 *
-	 * @return bool   The success of the operation.
+	 * @return Cache\Php   The success of the operation.
 	 */
 	protected function generateLanguagePhpFile($language, $application)
 	{
-		(new Cache\Php($language, $application))
+		return (new Cache\Php($language, $application))
 			->store(
 				$this->getLanguageApiCall()
 					->getLanguageFile($language)
 			);
 
-		return $this;
 	}
 
 	/**
@@ -81,16 +82,19 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 		return $this->language_api_call;
 	}
 
-
+	/**
+	 * @param $language
+	 * @param $appletLanguageId
+	 * @return $this
+	 * @throws Iface\LanguageException
+	 */
 	protected function generateLanguageXMLFile($language, $appletLanguageId)
 	{
-		(new Cache\Xml($language))
+		return (new Cache\Xml($language))
 			->store(
 				$this->getLanguageApiCall()
 					->getAppletLanguageFile($language, $appletLanguageId)
 			);
-
-		return $this;
 	}
 
 	/**
@@ -117,9 +121,14 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 				->info("\tAvailable languages: " . implode(', ', $languages));
 
 			foreach ($languages as $language) {
-				$this->getLogger()->debug("\t\tsave XML $language: try\n");
-				$this->generateLanguageXMLFile($language, $appletLanguageId);
-				$this->getLogger()->info("\t\tsave XML $language: OK\n");
+				$this->getLogger()->debug("\t\tgenerate XML $language ($appletLanguageId): try");
+				try {
+					$this->generateLanguageXMLFile($language, $appletLanguageId);
+					$this->getLogger()->info("\t\tgenerate XML $language ($appletLanguageId): OK");
+				} catch (Iface\LanguageException $e) {
+					$this->getLogger()->error("\t\tgenerate XML $language ($appletLanguageId): ERROR");
+				}
+				
 			}
 			$this->getLogger()
 				->info("\tgenerate: $appletLanguageId ($appletDirectory) language xmls: END");

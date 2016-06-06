@@ -24,7 +24,8 @@
       "php command/generate_language_files.php"
     ],
     "post-update-cmd": [
-      "php command/generate_language_files.php"
+      "php command/generate_language_files.php",
+      "phpunit"
     ]
   }
 }

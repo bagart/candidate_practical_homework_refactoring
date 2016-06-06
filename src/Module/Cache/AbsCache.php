@@ -3,10 +3,11 @@
 namespace Language\Module\Cache;
 use Language\Config;
 use Language\Exception as E;
+use Language\Iface;
 
-abstract class AbsCache
+abstract class AbsCache implements Iface\LanguageCache
 {
-    protected $storage = '/cache/';
+    protected $storage = 'cache/';
     protected $is_empty_allow= true;
 
     protected $path = null;
@@ -14,10 +15,10 @@ abstract class AbsCache
     
     public function __construct($language)
     {
-        Config::get('system.paths.root');
-        
         if (Config::get('system.paths.root')) {
-            $this->setStorage(Config::get('system.paths.root') . $this->storage);
+            $this->setStorage(
+                Config::get('system.paths.root') . '/' . $this->storage
+            );
         }
         $this->language = $language;
         $this->checkNodeName($language, '$language');

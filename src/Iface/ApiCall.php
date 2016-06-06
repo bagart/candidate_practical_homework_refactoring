@@ -12,7 +12,8 @@ interface ApiCall
     /**
      * @param array $get
      * @param array $post
-     * @return mixed
+     * @throws LanguageCache
+     * @return array|mixed
      */
     public function call(array $get = [], array $post = []);
 }

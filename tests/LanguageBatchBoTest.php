@@ -24,7 +24,7 @@ class LanguageBatchBoTest extends PHPUnit_Framework_TestCase
         try {
             $this->getApp()->generateLanguageFiles();
             $this->assertTrue(true);
-        } catch (\Language\Exception\WrongParam $e) {
+        } catch (\Language\Iface\LanguageException $e) {
             $this->assertTrue(false);
         }
     }
@@ -34,7 +34,7 @@ class LanguageBatchBoTest extends PHPUnit_Framework_TestCase
         try {
             $this->getApp()->generateAppletLanguageXmlFiles();
             $this->assertTrue(true);
-        } catch (\Language\Exception\WrongParam $e) {
+        } catch (\Language\Iface\LanguageException $e) {
             $this->assertTrue(false);
         }
     }
@@ -48,13 +48,13 @@ class LanguageBatchBoTest extends PHPUnit_Framework_TestCase
         try {
             $this->getApp()->getLogger()->info('all ok');
             $this->assertTrue(true);
-        } catch (\Exception $e) {
+        } catch (\Language\Iface\LanguageException $e) {
             $this->assertTrue(false);
         }
         try {
             $this->getApp()->getLogger()->warning('all ok');
             $this->assertTrue(false);
-        } catch (\Exception $e) {
+        } catch (\Language\Iface\LanguageException $e) {
             $this->assertTrue(true);
         }
         
@@ -68,7 +68,7 @@ class ExceptionLogger extends \Psr\Log\AbstractLogger
     public function log($level, $message, array $context = array())
     {
         if (\Monolog\Logger::toMonologLevel($level) >= $this->level) {
-            throw new \Exception($message);
+            throw new \Language\Exception\ErrorResult($message);
         }
     }
 }
