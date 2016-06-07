@@ -1,3 +1,11 @@
+#Install and test:
+
+```shell
+git clone https://github.com/bagart/candidate_practical_homework_refactoring
+cd candidate_practical_homework_refactoring
+composer update;
+```
+
 #Task:
 Refactor the LanguageBatchBo!
 The goals are:
