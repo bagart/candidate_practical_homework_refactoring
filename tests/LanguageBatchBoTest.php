@@ -12,7 +12,7 @@ class LanguageBatchBoTest extends PHPUnit_Framework_TestCase
         if (!$this->app) {
             $this->app = new \Language\LanguageBatchBo();
             $this->app->setLogger(
-                (new ExceptionLogger())
+                new ExceptionLogger()
             );
         }
         

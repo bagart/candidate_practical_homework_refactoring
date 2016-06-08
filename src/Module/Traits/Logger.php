@@ -12,6 +12,8 @@ trait Logger
     public function setLogger(\Psr\Log\LoggerInterface $logger)
     {
         $this->logger = $logger;
+
+        return $this;
     }
     
     private function getLoggerDefault()
@@ -33,6 +35,19 @@ trait Logger
             );
         
         return $logger;
+    }
+
+    /**
+     * log with INFO level
+     * @param $message
+     *
+     * @return $this
+     */
+    public function log($message)
+    {
+       $this->getLogger()->info($message) ;
+
+        return $this;
     }
 
     public function getLogger()

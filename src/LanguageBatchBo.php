@@ -47,7 +47,7 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 			}
 		}
 		$this->getLogger()->info("Generating language php files: END");
-		
+
 		return $this;
 	}
 
@@ -128,7 +128,7 @@ final class LanguageBatchBo implements Iface\LanguageGenerate
 				} catch (Iface\LanguageException $e) {
 					$this->getLogger()->error("\t\tgenerate XML $language ($appletLanguageId): ERROR");
 				}
-				
+
 			}
 			$this->getLogger()
 				->info("\tgenerate: $appletLanguageId ($appletDirectory) language xmls: END");

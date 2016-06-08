@@ -40,8 +40,9 @@ abstract class AbsApiCall implements Iface\ApiCall
     /**
      * Checks the api call result.
      *
-     * @param mixed  $result   The api call result to check.
-     * @param string $message
+     * @param array $result   The api call result to check.
+     * @param array $get;
+     * @param array $post;
      * @throws E\ErrorResult If the api call was not successful.
      *
      * @return true

@@ -23,7 +23,7 @@ class CacheXmlTest extends PHPUnit_Framework_TestCase
 
     public function internal_testFile($filename)
     {
-        $this->assertTrue(file_exists($filename));
+        $this->assertFileExists($filename);
         $this->assertTrue(filesize($filename) > 10);
 
         $content = file_get_contents($filename);
@@ -78,7 +78,7 @@ class CacheXmlTest extends PHPUnit_Framework_TestCase
         if (file_exists($test_path)) {
             unlink($test_path);
         }
-        $this->assertFalse(file_exists($test_path));
+        $this->assertFileNotExists($test_path);
         $cache_file = (new \Language\Module\Cache\Xml('test_lang'))
             ->store($this->mock_content);
         
